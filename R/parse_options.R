@@ -1,0 +1,167 @@
+#' Parse Options
+#'
+#' This function is used to parse the given chunk options and build the
+#' \code{drawio} command that will be executed to export the diagram as an
+#' image.
+#'
+#' This function is executed by the drawio engine and should normally not
+#' be used directly by the user.
+#'
+#' List of accepted options: (please see drawio's help for more details)
+#' \describe{
+#'   \item{\code{src}}{Path to the source diagram. Mandatory
+#'   argument, must not be null nor empty.}
+#'
+#'   \item{\code{format}}{Format of the output image. Either "\code{pdf}",
+#'   "\code{png}", "\code{jpg}", "\code{svg}", "\code{vsdx}", or "\code{xml}".
+#'   If unspecified, a default value is set, depending on the current document
+#'   output: "\code{pdf}" is used for LaTeX, "\code{svg}" for HTML, and
+#'   "\code{png}" for other formats.}
+#'
+#'   \item{engine.path}{Path to the \code{draw.io} executable. If unspecified,
+#'   the default value depends on the OS (please see
+#'   \code{\link{drawio.default.path}} for details).}
+#'
+#'   \item{engine.opts}{Optional arguments sent as-is to \code{drawio}. Please
+#'   see the \code{drawio} documentation for a list of possible arguments.}
+#'
+#'   \item{crop}{Whether to crop the result image or not. (Default: yes)}
+#'
+#'   \item{transparent}{Whether to set a transparent background or a blank
+#'   background. Can only be used if `\code{format}` is "\code{pdf}".}
+#'
+#'   \item{border}{Width of the border surrounding the diagram. (Default: 0)}
+#'
+#'   \item{page.index}{Which page to export from the source diagram, if
+#'   multiple pages are available.}
+#'
+#'   \item{page.range}{Similar to `\code{page.index}`, but allowing for
+#'   multiple pages. Can only be used if `\code{format}` is "\code{pdf}".}
+#'
+#'   \item{fig.path}{Path to the figure directory. By default, resulting
+#'   images are placed in the current working directory.}
+#' }
+#'
+#' @param options The list of chunk options. Please see in the details for a
+#' list of accepted options.
+#'
+#' @return cmd The command line that corresponds to the given options.
+#' @return output The path to the image that will result from the execution
+#' of `\code{cmd}` (including the cache directory, if it was specified).
+#'
+#' @export
+#'
+parse.options <- function(options) {
+    ### Image format
+    # By default, if none is specified, the format is set based on the
+    # document output format.
+    # For PDFs (i.e., LaTeX output), PDF images have a better quality and can
+    # be easily re-dimensioned (vectorized image).
+    # For HTML, SVG images are better integrated and are also vectorized.
+    # For other formats, PNG should be versatile.
+    options$format <- if (knitr::is_latex_output()) {
+        "pdf"
+    } else if (knitr::is_html_output()) {
+        "svg"
+    } else {
+        "png"
+    }
+
+    ### Path to the draw.io executable
+    drawio.path <- NULL
+    if (!is.null(options$engine.path)) {
+        if (is.list(options$engine.path)) {
+            # `engine.path` is a list of engines -> paths
+            drawio.path <- options$engine.path["drawio"]
+        } else {
+            # `engine.path` should be a path (character)
+            drawio.path <- options$engine.path
+        }
+    }
+    if (is.null(drawio.path)) {
+        drawio.path <- drawio.default.path()
+    }
+
+    ### Prepare the command (concatene options)
+    cmd <- paste(drawio.path, "--export")
+
+    ### Crop the output? (by default, yes)
+    if (isTRUE(options$crop) || is.null(options$crop)) {
+        cmd <- paste(cmd, "--crop")
+    }
+
+    ## Use a transparent background?
+    if (isTRUE(options$transparent)) {
+        if (options$format != "png") {
+            warning("The `transparent` option is only supported when format ",
+                    "is `png` (format was ", options$format, "). The result ",
+                    "will not be transparent.",
+                    call. = FALSE)
+            # Drawio should not complain, so we still add the option,
+            # just in case the user really knows what (s)he's doing.
+            # or doesn't care about warnings.
+        }
+        cmd <- paste(cmd, "--transparent")
+    }
+
+    ### Border width
+    if (!is.null(options$border)) {
+        cmd <- paste(cmd, "--border", options$border)
+    }
+
+    ### Page index (= which "page" in the diagram to export)
+    if (!is.null(options$page.index)) {
+        cmd <- paste(cmd, "--page-index", options$page.index)
+    }
+
+    ### Page range (= multiple "page" indices)
+    if (!is.null(options$page.range)) {
+        if (options$format != "pdf") {
+            warning("The `page.range` options is only supported when format ",
+                    "is `pdf` (format was ", options$format, ")",
+                    call. = FALSE)
+        }
+        cmd <- paste(cmd, "--page-range", options$page.range)
+    }
+
+    ### Additional options
+    if (!is.null(options$engine.opts)) {
+        if (is.list(options$engine.opts)) {
+            # The `engine.opts` is a list of engines -> options
+            cmd <- paste(cmd, options$engine.opts["drawio"])
+        } else {
+            # The `engine.opts` is simply options
+            cmd <- paste(cmd, options$engine.opts)
+        }
+    }
+
+    ### Path to the output file
+    # If a figure directory is specified, we use it ; otherwise, we simply
+    # use the current directory.
+    # The filename consists of the chunk's label (unique identifier) + format
+    filename <- paste(options$label, ".", options$format, sep = "")
+    fig.dir <- options$fig.path
+    if (!is.null(fig.dir)) {
+        # If the path ends with a trailing `/`, delete it!
+        # Otherwise, the `file.path` will output something like `path/to//file`
+        # which does not work
+        fig.dir <- sub("/$", "", fig.dir)
+        # Create the directory/directories, in case they do not exist already
+        dir.create(fig.dir, recursive=TRUE)
+        # Finally, append the filename to the prefix path
+        output <- file.path(fig.dir, filename)
+    } else {
+        output <- filename
+    }
+    cmd <- paste(cmd, "--output", output)
+
+    ### Source file
+    if (is.null(options$src)) {
+        error("The source file `src` must be specified!")
+    } else if (!file.exists(options$src)) {
+        error("Source file (", options$src, ") does not exist!")
+    }
+    cmd <- paste(cmd, options$src)
+
+    return(list(cmd = cmd, output = output))
+}
