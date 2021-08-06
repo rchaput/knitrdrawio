@@ -1,4 +1,8 @@
+# R-specific files
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# Ignore generated PDFs from examples
+examples/*.pdf

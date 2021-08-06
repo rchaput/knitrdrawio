@@ -8,6 +8,10 @@ This package adds a `drawio` engine to [knitr], which can be used to
 automatically export [draw.io] diagrams into images from code chunks in 
 RMarkdown documents.
 
+## Preview
+
+![Preview of the code chunk (in Rmd) and the PDF result](preview.png)
+
 ## Installation
 
 This package is only available on GitHub, you will therefore need to install 
