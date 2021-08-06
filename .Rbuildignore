@@ -3,3 +3,4 @@
 LICENSE
 .gitignore
 README.md
+Makefile
