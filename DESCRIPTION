@@ -1,7 +1,7 @@
 Package: knitrdrawio
 Type: Package
 Title: Drawio Engine for Knitr
-Version: 0.1.0
+Version: 0.1.1
 Author: Remy Chaput
 Maintainer: remy chaput <rchaput.pro@gmail.com>
 Description: Provides a new engine for knitr that exports draw.io diagrams
@@ -15,4 +15,4 @@ URL: https://github.com/rchaput/knitrdrawio/
 Encoding: UTF-8
 SystemRequirements: The draw.io software must be installed and accessible (https://www.diagrams.net/)
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

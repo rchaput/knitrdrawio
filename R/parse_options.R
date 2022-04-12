@@ -59,12 +59,14 @@ parse.options <- function(options) {
     # be easily re-dimensioned (vectorized image).
     # For HTML, SVG images are better integrated and are also vectorized.
     # For other formats, PNG should be versatile.
-    options$format <- if (knitr::is_latex_output()) {
-        "pdf"
-    } else if (knitr::is_html_output()) {
-        "svg"
-    } else {
-        "png"
+    if (is.null(options$format)) {
+        options$format <- if (knitr::is_latex_output()) {
+            "pdf"
+        } else if (knitr::is_html_output()) {
+            "svg"
+        } else {
+            "png"
+        }
     }
 
     ### Path to the draw.io executable
@@ -82,7 +84,7 @@ parse.options <- function(options) {
         drawio.path <- drawio.default.path()
     }
 
-    ### Prepare the command (concatene options)
+    ### Prepare the command (concatenate options)
     cmd <- paste(drawio.path, "--export")
 
     ### Crop the output? (by default, yes)
@@ -90,11 +92,11 @@ parse.options <- function(options) {
         cmd <- paste(cmd, "--crop")
     }
 
-    ## Use a transparent background?
+    ### Use a transparent background?
     if (isTRUE(options$transparent)) {
         if (options$format != "png") {
             warning("The `transparent` option is only supported when format ",
-                    "is `png` (format was ", options$format, "). The result ",
+                    "is `png` (format was `", options$format, "`). The result ",
                     "will not be transparent.",
                     call. = FALSE)
             # Drawio should not complain, so we still add the option,
@@ -147,7 +149,9 @@ parse.options <- function(options) {
         # which does not work
         fig.dir <- sub("/$", "", fig.dir)
         # Create the directory/directories, in case they do not exist already
-        dir.create(fig.dir, recursive=TRUE)
+        if (!dir.exists(fig.dir)) {
+            dir.create(fig.dir, recursive=TRUE)
+        }
         # Finally, append the filename to the prefix path
         output <- file.path(fig.dir, filename)
     } else {
@@ -157,9 +161,10 @@ parse.options <- function(options) {
 
     ### Source file
     if (is.null(options$src)) {
-        error("The source file `src` must be specified!")
+        stop("The source file `src` must be specified in the chunk options!")
     } else if (!file.exists(options$src)) {
-        error("Source file (", options$src, ") does not exist!")
+        stop(paste0("Source file (", options$src, " from current dir = ",
+                    getwd(), ") does not exist!"))
     }
     cmd <- paste(cmd, options$src)
 
