@@ -71,9 +71,9 @@ drawio.engine <- function(options) {
     }
 
     # Parse the options to get the draw.io command line and the output path
-    result <- parse.options(options)
-    cmd <- result$cmd
-    output <- result$output
+    command <- parse.options(options)
+    cmd <- paste(c(command$exe, command$args), collapse = " ")
+    output <- command$output
 
     # Execute the command
     system(cmd)
