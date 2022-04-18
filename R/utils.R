@@ -38,14 +38,7 @@
 #' @export
 #'
 drawio.default.path <- function() {
-    # See https://www.r-bloggers.com/2015/06/identifying-the-os-from-r/
-    sysinfo <- Sys.info()
-    if (!is.null(sysinfo)) {
-        os <- sysinfo['sysname']
-    } else {
-        os <- .Platform$OS.type
-    }
-
+    os <- get.os.type()
     path <- switch(
         os,
         "Darwin" = "/Applications/draw.io.app/Contents/MacOS/draw.io",
@@ -83,4 +76,20 @@ drawio.default.path <- function() {
     }
 
     return(path)
+}
+
+#' Get (simplified) Operating System type
+#'
+#' This functions returns a simple name for the current OS: "Linux", "Darwin",
+#' or "Windows".
+#'
+get.os.type <- function () {
+    # See https://www.r-bloggers.com/2015/06/identifying-the-os-from-r/
+    sysinfo <- Sys.info()
+    if (!is.null(sysinfo)) {
+        os <- sysinfo['sysname']
+    } else {
+        os <- .Platform$OS.type
+    }
+    return(os)
 }
