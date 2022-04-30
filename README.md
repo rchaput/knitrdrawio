@@ -36,6 +36,27 @@ have if you are writing Rmd documents).
 
 It also requires to have installed on your system the `draw.io` binary.
 
+### On Docker (CI, etc.)
+
+Draw.io requires a slightly different setup on headless environments (without 
+a graphical server), such as Docker containers and in particular Continuous 
+Integration workflows.
+
+The following 2 points are important in such cases:
+
+* The `xvfb-run` binary must be available on the system. On most Linux
+  distributions, it can be obtained by installing the `xvfb` package through
+  the distribution's package manager (apt, rpm, ...).
+  *Note: `xvfb-run` provides the virtual graphical server that is required
+  for `draw.io` to function. **knitrdrawio** will automatically encapsulate
+  calls to `draw.io` if a headless environment is detected and `xvfb-run` is
+  present. Alternatively, one can set the `$DISPLAY` environment variable to
+  a (virtual) graphical server.*
+
+* It is strongly recommended to install `draw.io` [16.0.0][drawio16].
+  *Note: more recent versions of `draw.io` ship Electron 16.x, which seems to
+  have a problem with D-Bus, making `draw.io` crash on headless environments.*
+
 ## Usage
 
 First, load the package in some code chunk, preferably at the beginning of your 
@@ -126,3 +147,4 @@ Non-existing directories are created.
 [knitr]: https://yihui.org/knitr/
 [knitr-options]: https://yihui.org/knitr/options/
 [draw.io]: https://diagrams.net/
+[drawio16]: https://github.com/jgraph/drawio-desktop/releases/tag/v16.0.0
