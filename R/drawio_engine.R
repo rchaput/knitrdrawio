@@ -71,9 +71,18 @@ drawio.engine <- function(options) {
     }
 
     # Parse the options to get the draw.io command line and the output path
-    result <- parse.options(options)
-    cmd <- result$cmd
-    output <- result$output
+    command <- parse.options(options)
+
+    if (is.headless.env()) {
+        # We are in a headless (no graphical server) environment.
+        # Draw.io requires one to work, so we have to use a virtual
+        # server, such as `xvfb`, as described in the official repository
+        # https://github.com/jgraph/drawio-desktop/issues/146
+        command <- wrap.xvfb(command)
+    }
+
+    cmd <- paste(c(command$exe, command$args), collapse = " ")
+    output <- command$output
 
     # Execute the command
     system(cmd)

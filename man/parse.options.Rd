@@ -11,10 +11,11 @@ parse.options(options)
 list of accepted options.}
 }
 \value{
-cmd The command line that corresponds to the given options.
+exe The path to the draw.io executable binary.
 
-output The path to the image that will result from the execution
-of `\code{cmd}` (including the cache directory, if it was specified).
+args The list of command line arguments to be passed to drawio.
+
+
 }
 \description{
 This function is used to parse the given chunk options and build the

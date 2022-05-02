@@ -45,9 +45,11 @@
 #' @param options The list of chunk options. Please see in the details for a
 #' list of accepted options.
 #'
-#' @return cmd The command line that corresponds to the given options.
+#' @return exe The path to the draw.io executable binary.
+#' @return args The list of command line arguments to be passed to drawio.
 #' @return output The path to the image that will result from the execution
-#' of `\code{cmd}` (including the cache directory, if it was specified).
+#' of `\code{exe} \code{args}` (including the cache directory, if it was
+#' specified).
 #'
 #' @export
 #'
@@ -84,12 +86,12 @@ parse.options <- function(options) {
         drawio.path <- drawio.default.path()
     }
 
-    ### Prepare the command (concatenate options)
-    cmd <- paste(drawio.path, "--export")
+    ### Prepare the command (list of arguments)
+    args <- "--export"
 
     ### Crop the output? (by default, yes)
     if (isTRUE(options$crop) || is.null(options$crop)) {
-        cmd <- paste(cmd, "--crop")
+        args <- c(args, "--crop")
     }
 
     ### Use a transparent background?
@@ -103,17 +105,17 @@ parse.options <- function(options) {
             # just in case the user really knows what (s)he's doing.
             # or doesn't care about warnings.
         }
-        cmd <- paste(cmd, "--transparent")
+        args <- c(args, "--transparent")
     }
 
     ### Border width
     if (!is.null(options$border)) {
-        cmd <- paste(cmd, "--border", options$border)
+        args <- c(args, "--border", options$border)
     }
 
     ### Page index (= which "page" in the diagram to export)
     if (!is.null(options$page.index)) {
-        cmd <- paste(cmd, "--page-index", options$page.index)
+        args <- c(args, "--page-index", options$page.index)
     }
 
     ### Page range (= multiple "page" indices)
@@ -123,17 +125,17 @@ parse.options <- function(options) {
                     "is `pdf` (format was ", options$format, ")",
                     call. = FALSE)
         }
-        cmd <- paste(cmd, "--page-range", options$page.range)
+        args <- c(args, "--page-range", options$page.range)
     }
 
     ### Additional options
     if (!is.null(options$engine.opts)) {
         if (is.list(options$engine.opts)) {
             # The `engine.opts` is a list of engines -> options
-            cmd <- paste(cmd, options$engine.opts["drawio"])
+            args <- c(args, options$engine.opts["drawio"])
         } else {
             # The `engine.opts` is simply options
-            cmd <- paste(cmd, options$engine.opts)
+            args <- c(args, options$engine.opts)
         }
     }
 
@@ -141,7 +143,7 @@ parse.options <- function(options) {
     # If a figure directory is specified, we use it ; otherwise, we simply
     # use the current directory.
     # The filename consists of the chunk's label (unique identifier) + format
-    filename <- paste(options$label, ".", options$format, sep = "")
+    filename <- paste0(options$label, ".", options$format)
     fig.dir <- options$fig.path
     if (!is.null(fig.dir)) {
         # If the path ends with a trailing `/`, delete it!
@@ -157,7 +159,7 @@ parse.options <- function(options) {
     } else {
         output <- filename
     }
-    cmd <- paste(cmd, "--output", output)
+    args <- c(args, "--output", output)
 
     ### Source file
     if (is.null(options$src)) {
@@ -166,7 +168,7 @@ parse.options <- function(options) {
         stop(paste0("Source file (", options$src, " from current dir = ",
                     getwd(), ") does not exist!"))
     }
-    cmd <- paste(cmd, options$src)
+    args <- c(args, options$src)
 
-    return(list(cmd = cmd, output = output))
+    return(list(exe = drawio.path, args = args, output = output))
 }
