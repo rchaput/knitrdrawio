@@ -15,7 +15,9 @@ exe The path to the draw.io executable binary.
 
 args The list of command line arguments to be passed to drawio.
 
-
+output The path to the image that will result from the execution
+of `\code{exe} \code{args}` (including the cache directory, if it was
+specified).
 }
 \description{
 This function is used to parse the given chunk options and build the
