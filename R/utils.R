@@ -39,23 +39,30 @@
 #'
 drawio.default.path <- function() {
     os <- get.os.type()
-    path <- switch(
-        os,
-        "Darwin" = "/Applications/draw.io.app/Contents/MacOS/draw.io",
-        "Linux" = "/usr/bin/draw.io",
-        "Windows" = "drawio.exe"
-    )
 
-    if (is.null(path)) {
-        # Returning NULL could create problems later (e.g., trying to execute
-        # the command line might execute another, unwanted program).
-        # So we definitely stop the execution.
+    if (os == "Darwin") {
+        path <- drawio.default.path.darwin()
+    } else if (os == "Linux" || os == "unix") {
+        path <- drawio.default.path.linux()
+    } else if (os == "Windows") {
+        path <- drawio.default.path.windows()
+    } else {
         stop("Your OS (", os, ") was not recognized. ",
              "Please set your custom location by using the `engine.path` ",
              "chunk option. See the ?knitrdrawio::drawio.default.path ",
              "documentation for more details.")
     }
-    if (!file.exists(path)) {
+
+    if (is.null(path)) {
+        # Returning NULL could create problems later (e.g., trying to execute
+        # the command line might execute another, unwanted program).
+        # So we definitely stop the execution.
+        stop("Could not find a path to drawio on your OS (", os, ").",
+             "Please make sure that drawio is installed, and set your ",
+             "custom location by using the `engine.path` chunk option. ",
+             "See the ?knitrdrawio::drawio.default.path documentation ",
+             "for more details.")
+    } else if (!file.exists(path)) {
         # Even if the path does not exist, we simply emit a warning here.
         # Just in case the command line might still work (e.g., if the
         # current working dir was not correctly set and the path is relative...)
@@ -78,6 +85,140 @@ drawio.default.path <- function() {
     return(path)
 }
 
+
+#' Find the drawio path on Linux
+#'
+#' Returns the absolute path to the drawio executable, or \code{NULL}
+#' if it was not found.
+#'
+#' @note The executable is first searched in the directories specified in the
+#' \preformatted{PATH} environment variable, through the \code{Sys.which}
+#' function.
+#' If the executable cannot be found in the \preformatted{PATH}, we search
+#' in a few well-known locations, typically \preformatted{/bin},
+#' \preformatted{/usr/bin}, and \preformatted{/opt/drawio}.
+#'
+drawio.default.path.linux <- function () {
+    # First, we try with `Sys.which` if the `drawio` executable can be found
+    # in the PATH.
+    path <- Sys.which("drawio")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # Same, but with the `draw.io` name.
+    path <- Sys.which("draw.io")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # We cannot find it on the PATH, let's try for some common locations.
+    paths <- c("/bin/drawio",
+               "/bin/draw.io",
+               "/usr/bin/drawio",
+               "/usr/bin/draw.io",
+               "/usr/local/bin/drawio",
+               "/usr/local/bin/draw.io",
+               "/opt/drawio/drawio",
+               "/opt/drawio/draw.io"
+    )
+
+    for (path in paths) {
+        if (file.exists(path)) {
+            return(path)
+        }
+    }
+
+    # We have not found the executable anywhere, return NULL to signal it.
+    NULL
+}
+
+
+#' Find the drawio path on Darwin (Mac OS X)
+#'
+#' Returns the absolute path to the drawio executable, or \code{NULL}
+#' if it was not found.
+#'
+#' @note The executable is first searched in the directories specified in the
+#' \preformatted{PATH} environment variable, through the \code{Sys.which}
+#' function.
+#' If the executable cannot be found in the \preformatted{PATH}, we search
+#' in a few well-known locations, typically \preformatted{/Applications},
+#' \preformatted{~/Applications}, \preformatted{~/bin}, \preformatted{/bin},
+#' \preformatted{/usr/bin}, \preformatted{/usr/local/bin},
+#' \preformatted{/opt/drawio}.
+#'
+drawio.default.path.darwin <- function () {
+    # First, we try with `Sys.which` if the `drawio` executable can be found
+    # in the PATH.
+    path <- Sys.which("drawio")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # Same, but with the `draw.io` name.
+    path <- Sys.which("draw.io")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # We cannot find it on the PATH, let's try for some common locations.
+    paths <- c("/Applications/draw.io.app/Contents/MacOS/draw.io",
+               "~/Applications/draw.io.app/Contents/MacOS/draw.io",
+               "~/bin/drawio",
+               "~/bin/draw.io",
+               "/bin/drawio",
+               "/bin/draw.io",
+               "/usr/bin/drawio",
+               "/usr/bin/draw.io",
+               "/usr/local/bin/drawio",
+               "/usr/local/bin/draw.io",
+               "/opt/drawio/drawio",
+               "/opt/drawio/draw.io"
+    )
+
+    for (path in paths) {
+        if (file.exists(path)) {
+            return(path)
+        }
+    }
+
+    # We have not found the executable anywhere, return NULL to signal it.
+    NULL
+}
+
+
+#' Find the drawio path on Windows
+#'
+#' Returns the absolute path to the drawio executable, or \code{NULL}
+#' if it was not found.
+#'
+#' @note The executable is first searched in the directories specified in the
+#' \preformatted{PATH} environment variable, through the \code{Sys.which}
+#' function.
+#'
+drawio.default.path.windows <- function () {
+    # First, we try with `Sys.which` if the `drawio` executable can be found
+    # in the PATH.
+    path <- Sys.which("drawio.exe")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # Same, but with the `draw.io` name.
+    path <- Sys.which("draw.io.exe")[[1]]
+    if (file.exists(path)) {
+        return(path)
+    }
+
+    # TODO: found some common installation paths on Windows
+    #  maybe look for Electron-builder default path?
+
+    # We have not found the executable anywhere, return NULL to signal it.
+    NULL
+}
+
+
 #' Get (simplified) Operating System type
 #'
 #' This functions returns a simple name for the current OS: "Linux", "Darwin",
@@ -87,7 +228,7 @@ get.os.type <- function () {
     # See https://www.r-bloggers.com/2015/06/identifying-the-os-from-r/
     sysinfo <- Sys.info()
     if (!is.null(sysinfo)) {
-        os <- sysinfo['sysname']
+        os <- sysinfo[['sysname']]
     } else {
         os <- .Platform$OS.type
     }
