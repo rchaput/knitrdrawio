@@ -9,3 +9,4 @@
 
 # Ignore generated PDFs from examples
 examples/*.pdf
+inst/doc

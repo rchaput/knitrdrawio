@@ -16,3 +16,6 @@ Encoding: UTF-8
 SystemRequirements: The draw.io software must be installed and accessible (https://www.diagrams.net/)
 LazyData: true
 RoxygenNote: 7.1.2
+VignetteBuilder: knitr
+Suggests: 
+    rmarkdown
