@@ -11,9 +11,11 @@
 #' use workarounds that prevent draw.io from crashing.
 #'
 #' We use 2 methods:
+#'
 #' 1. If the \code{xrandr} tool is available, we use it to query the
 #'   configuration of the current display. If `xrandr` does not find any
 #'   display, we assume to be in a headless environment.
+#'
 #' 2. Otherwise, we resort to a simpler test: on Linux, the \code{$DISPLAY}
 #'   environment variable controls the display server which should be used.
 #'   If it is empty, or not set, we assume to be in a headless environment.
@@ -31,6 +33,8 @@
 #' invoke draw.io normally. Maybe, by chance, it will work. The worst possible
 #' outcome is that draw.io crashes, and the document rendering will fail as
 #' well.
+#'
+#' @md
 #'
 is.headless.env <- function () {
     # Solution 1: use `xrandr --query`. It returns 1 if no display is available.
@@ -61,6 +65,20 @@ is.headless.env <- function () {
 #' \code{exe} is the path to the executable (in this case, \code{xvfb-run}
 #' instead of draw.io), \code{args} are the arguments, and \code{output} is
 #' left unchanged (path to the output file).
+#'
+#' @param command The list that represents the command that should have been
+#' executed, in a non-headless environment. This list should be the result
+#' of a call to \code{\link{parse.options}}. It must have the following
+#' values: \code{exe}, \code{args}, and \code{output}.
+#'
+#' @return exe The path to the xvfb-run executable binary.
+#' @return args The list of command line arguments to be passed to xvfb,
+#' including the path to the draw.io executable, the draw.io arguments,
+#' and electron arguments for headless mode.
+#' @return output The path to the image that will result from the execution
+#' of `\code{exe} \code{args}` (including the cache directory, if it was
+#' specified). This is exactly the same as the value in the \code{command}
+#' argument.
 #'
 wrap.xvfb <- function (command) {
     # Check if xvfb-run exists on the system

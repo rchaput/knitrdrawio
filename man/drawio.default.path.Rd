@@ -5,7 +5,7 @@
 \alias{drawio.default.path.linux}
 \alias{drawio.default.path.darwin}
 \alias{drawio.default.path.windows}
-\title{Default path to the Drawio executable}
+\title{Find the Drawio executable}
 \usage{
 drawio.default.path()
 
@@ -16,8 +16,8 @@ drawio.default.path.darwin()
 drawio.default.path.windows()
 }
 \description{
-This function returns a (supposedly) sane default for the path to the
-\strong{drawio} executable, depending on the current OS.
+This function tries to find the path to a \strong{drawio} executable, assuming
+a default installation, in a well-known location, depending on the OS.
 }
 \section{Functions}{
 \itemize{
