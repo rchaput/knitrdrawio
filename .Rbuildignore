@@ -10,3 +10,4 @@ preview.png
 ^docs$
 ^.github$
 ^.idea$
+Dockerfile
