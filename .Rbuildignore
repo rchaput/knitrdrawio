@@ -5,4 +5,5 @@ LICENSE
 README.md
 Makefile
 preview.png
-^examples/.*$
+^doc$
+^Meta$
