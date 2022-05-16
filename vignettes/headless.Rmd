@@ -1,0 +1,113 @@
+---
+title: "Using headless environments (Docker)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using headless environments (Docker)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(knitrdrawio)
+```
+
+# Motivations
+
+It feels natural and intuitive to use **knitrdrawio** as part of a Continuous
+Integration / Continuous Deployment (CI/CD) workflow, for example to
+automatically your document or book, each time you push a commit.
+
+However, CI/CD typically runs in a *headless* environment, a server without
+a graphical display, and/or in Docker containers.
+
+**knitrdrawio** requires additional dependencies to work in such environments,
+because of known limitations of the draw.io executable.
+Being an Electron-based application, draw.io expects and requires a graphical
+display, and needs to be tricked into thinking there is one available.
+
+*Note*: if your system is mis-configured, **knitrdrawio** might believe to
+be in a *headless* environment, and complain!
+In this case, you must make sure that your `$DISPLAY` environment variable
+is correctly set, so that **knitrdrawio** (and, more importantly, drawio itself)
+may find your display.
+In particular, if the `$DISPLAY` variable is empty, there certainly is a problem.
+
+# How to
+
+Two methods are available:
+
+* the first one simply requires additional system dependencies but no setup
+  (**knitrdrawio** will handle it internally) ;
+* the second one requires the same dependencies but an additional setup.
+
+Both methods require you to install on the system the following dependencies:
+
+* [xvfb]: a virtual display server that behaves as if a "true" graphical
+  display was connected. Read more on the [man page][xvfb-man].
+* [libgbm1] and [libasound2]: libraries that drawio does not include but requires.
+
+These system dependencies can be simply installed through your distribution's
+package manager, e.g., `apt` for Ubuntu and Debian-derivatives systems.
+Please check with your package manager for the appropriate packages, the
+name might differ.
+
+Also, it is **strongly** recommended to use [drawio v16.0.0][drawio16],
+when using **knitrdrawio** in a CI/CD or headless environment.
+
+Later versions of drawio (from the 16.0.2) ship with Electron 16.x.x,
+which seems to have a problem with D-Bus.
+
+## Simple method
+
+Step 1. Simply install the required dependencies `xvfb`, `libgbm1`, and
+`libasound2`.
+
+Step 2. Profit. **knitrdrawio** will automatically detect you are in a
+headless environment, and invoke drawio with the correct arguments to
+use `xvfb`.
+
+## "Performance"-focused method
+
+The previous method has the advantage of being simple and not requiring
+additional setup, except for the dependencies.
+However, there might be an overhead due to **knitrdrawio** internally
+invoking `xvfb-run` each time a diagram must be rendered.
+As the number of your diagrams grows, the overhead might become
+noticeable.
+
+To avoid this, this method creates a virtual server before **knitrdrawio** is
+launched, and makes the same virtual server be used for all diagrams.
+Thus, the overhead of starting a virtual server is paid only once.
+
+Step 1. Install the required dependencies.
+
+Step 2. *Before* rendering your document through knitr or rmarkdown, choose
+a display number, which must be unique on the machine (usually `99` should
+work).
+  Set the `$DISPLAY` environment variable to `:<your number>`, e.g.,
+  `export DISPLAY=:99` (do not forget the `:` part).
+  Start the virtual server with `Xvfb &`.
+
+Step 3. You can now render your document. The virtual server as a background
+process will make drawio believe there is a graphical display available.
+
+The complete workflow should look like this, assuming an Ubuntu distribution:
+
+```sh
+sudo apt update
+sudo apt install xvfb libgbm1 libasound2
+export DISPLAY=:99
+Xvfb &
+R -e 'rmarkdown::render("my_document.Rmd")'
+```
+
+
+[xvfb]: https://packages.ubuntu.com/kinetic/xvfb
+[xvfb-man]: https://linux.die.net/man/1/xvfb
+[libgbm1]: https://packages.ubuntu.com/kinetic/libgbm1
+[libasound2]: https://packages.ubuntu.com/kinetic/libasound2
