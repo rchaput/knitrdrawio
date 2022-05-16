@@ -12,3 +12,6 @@ doc:
 
 install:
 	R -q -e "devtools::install(build_vignettes = T)"
+
+site:
+	R -q -e "pkgdown::build_site()"

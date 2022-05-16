@@ -10,7 +10,7 @@ RMarkdown documents.
 
 ## Preview
 
-![Preview of the code chunk (in Rmd) and the PDF result](preview.png)
+![Preview of the code chunk (in Rmd) and the PDF result](man/figures/preview.png)
 
 ## Installation
 

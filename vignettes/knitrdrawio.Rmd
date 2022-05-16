@@ -10,7 +10,9 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  # We need to produce figures in `vignettes` for pkgdown.
+  fig.path = "."
 )
 
 library(knitrdrawio)

@@ -7,3 +7,6 @@ Makefile
 preview.png
 ^doc$
 ^Meta$
+^docs$
+^.github$
+^.idea$

@@ -1,0 +1,7 @@
+url: https://rchaput.github.io/knitrdrawio
+template:
+  bootstrap: 5
+navbar:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [search, github]
