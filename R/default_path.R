@@ -37,39 +37,23 @@ drawio.default.path <- function() {
     } else if (os == "Windows") {
         path <- drawio.default.path.windows()
     } else {
-        stop("Your OS (", os, ") was not recognized. ",
-             "Please set your custom location by using the `engine.path` ",
-             "chunk option. See the ?knitrdrawio::drawio.default.path ",
-             "documentation for more details.")
+        unrecognized_os$raise(os, call = rlang::caller_env())
     }
 
     if (is.null(path)) {
         # Returning NULL could create problems later (e.g., trying to execute
         # the command line might execute another, unwanted program).
         # So we definitely stop the execution.
-        stop("Could not find a path to drawio on your OS (", os, ").",
-             "Please make sure that drawio is installed, and set your ",
-             "custom location by using the `engine.path` chunk option. ",
-             "See the ?knitrdrawio::drawio.default.path documentation ",
-             "for more details.")
+        drawio_binary_not_found$raise(os, call = rlang::caller_env())
     } else if (!file.exists(path)) {
-        # Even if the path does not exist, we simply emit a warning here.
-        # Just in case the command line might still work (e.g., if the
-        # current working dir was not correctly set and the path is relative...)
-        # and we do not want to block the user. The worse that could happen
-        # would be to execute a non-existing file. The `system` call will
-        # emit its own error in this case.
-        warning("The default drawio path (", path, ") does not exist. ",
-                "Please set your custom location by using the `engine.path` ",
-                "chunk option. See the ?knitrdrawio::drawio.default.path ",
-                "documentation for more details.")
+        # This should not happen (by construction of the specialized functions),
+        # but we emit a warning just in case.
+        drawio_binary_not_exists$raise(path, call = rlang::caller_env())
     } else if (!file_test("-x", path)) {
-        # Same as the previous `if`: just in case it might still work, we
-        # only emit a warning.
-        warning("The default drawio path (", path, ") is not executable. ",
-                "Please set your custom location by using the `engine.path` ",
-                "chunk option. See the ?knitrdrawio::drawio.default.path ",
-                "documentation for more details.")
+        # We simply emit a warning, just in case it might work, to avoid
+        # blocking the user. The worse that could happen is the `system` call
+        # raising its own error.
+        drawio_binary_not_executable$raise(path, call = rlang::caller_env())
     }
 
     return(path)

@@ -97,10 +97,7 @@ parse.options <- function(options) {
     ### Use a transparent background?
     if (isTRUE(options$transparent)) {
         if (options$format != "png") {
-            warning("The `transparent` option is only supported when format ",
-                    "is `png` (format was `", options$format, "`). The result ",
-                    "will not be transparent.",
-                    call. = FALSE)
+            transparent_incorrect_format$raise(options$format, call = rlang::caller_env())
             # Drawio should not complain, so we still add the option,
             # just in case the user really knows what (s)he's doing.
             # or doesn't care about warnings.
@@ -121,9 +118,7 @@ parse.options <- function(options) {
     ### Page range (= multiple "page" indices)
     if (!is.null(options$page.range)) {
         if (options$format != "pdf") {
-            warning("The `page.range` options is only supported when format ",
-                    "is `pdf` (format was ", options$format, ")",
-                    call. = FALSE)
+            pagerange_incorrect_format$raise(options$format, call = rlang::caller_env())
         }
         args <- c(args, "--page-range", options$page.range)
     }
@@ -163,10 +158,9 @@ parse.options <- function(options) {
 
     ### Source file
     if (is.null(options$src)) {
-        stop("The source file `src` must be specified in the chunk options!")
+        source_unspecified$raise()
     } else if (!file.exists(options$src)) {
-        stop(paste0("Source file (", options$src, " from current dir = ",
-                    getwd(), ") does not exist!"))
+        source_not_exists$raise(options$src, call = rlang::caller_env())
     }
     args <- c(args, options$src)
 

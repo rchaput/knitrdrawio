@@ -84,11 +84,7 @@ wrap.xvfb <- function (command) {
     # Check if xvfb-run exists on the system
     new_exe <- Sys.which("xvfb-run")
     if (new_exe == "") {
-        stop(paste0("knitrdrawio detected a headless environment. ",
-                    "draw.io requires xvfb-run when no monitor is connected, ",
-                    "which was not found on your system. Please install xvfb. ",
-                    "If you believe this should not be a headless environment, ",
-                    "make sure that the DISPLAY environment variable is set."))
+        xvfb_binary_not_found$raise(call = rlang::caller_env())
     }
 
     # electron arguments must go *after* the last draw.io argument ; otherwise,
