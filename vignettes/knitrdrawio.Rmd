@@ -220,6 +220,7 @@ In this case, the produced diagram will be kept, and associated with a hash
 key, which determines whether the diagram should be rebuilt or not.
 
 The hash key is invalidated when:
+
 - the source diagram changes ;
 - the chunk itself is changed.
 
@@ -249,6 +250,34 @@ options, this is useful if one of your cases is not covered.
 
 Note that you can set this option globally through the `knitr::chunks_opt$set`
 function, exactly as for the `engine.path` option.
+
+## Other options
+
+### Error-recovery behaviour
+
+If the `draw.io` binary encounters an error, **knitrdrawio** may try to recover
+or immediately stop the whole document rendering.
+
+This behaviour is controlled by the `on.error` chunk option, which you may
+specify either for a specific chunk, or for all chunks using the
+`knitr::opts_chunks$set` method.
+
+The following values are recognized:
+
+* `stop` (default): Raise an informative error, and abort the process. Usually
+  (depending on *knitr*'s configuration itself), this will stop the document
+  rendering. It prevents generating a document with a missing or wrongly
+  exported diagram.
+
+* `skip`: Raise an informative warning, and skip the current diagram. The
+  diagram will not be included in the document, and the document rendering
+  goes on.
+
+* `continue`: Raise an informative warning, but still try to include the
+  diagram in the document. As `draw.io` does not explicitly signal errors, this
+  method can be used when an error is falsely reported. However, please note
+  that *knitr* will most likely fail if the diagram cannot be used (e.g.,
+  no image was generated)!
 
 
 [knitr]: https://yihui.org/knitr/

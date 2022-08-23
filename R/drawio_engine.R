@@ -81,16 +81,37 @@ drawio.engine <- function(options) {
         command <- wrap.xvfb(command)
     }
 
-    cmd <- paste(c(command$exe, command$args), collapse = " ")
-    output <- command$output
+    # Execute the command ; draw.io always returns 0, so we need to capture
+    # stderr to detect errors. When `stderr` is TRUE, `stdout` needs to be TRUE.
+    res <- system2(command$exe, args = command$args, stdout = TRUE, stderr = TRUE)
 
-    # Execute the command
-    system(cmd)
+    # Detect and handle errors
+    if (length(grep("Error", res)) > 0) {
+        # draw.io reported an error in the stderr/stdout. We decide whether to
+        # stop, skip, or continue. Default is to `stop`.
+        on.error <- match.arg(options$on.error, c("stop", "skip", "continue"))
+        if (on.error == "stop") {
+            # Raise an error now and stop execution.
+            # Knitr would probably raise one anyway, stopping now is more
+            # informative for the user.
+            drawio_error$raise(res, abort = TRUE)
+        } else if (on.error == "skip") {
+            # Raise a warning to inform user, and skip the current diagram.
+            # Do not try to include it.
+            drawio_error$raise(res, abort = FALSE)
+            return(invisible(NULL))
+        } else if (on.error == "continue") {
+            # Raise a warning to inform user, and then continue. Let knitr
+            # try to include the produced diagram. If drawio really crashed,
+            # the diagram may not exists, and knitr will raise its own error!
+            drawio_error$raise(res, abort = FALSE)
+        }
+    }
 
     if (options$include) {
         knitr::engine_output(
             options,
-            out = list(knitr::include_graphics(output))
+            out = list(knitr::include_graphics(command$output))
         )
     }
 }

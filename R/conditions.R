@@ -159,3 +159,28 @@ source_not_exists <- list(
     )
   }
 )
+
+drawio_error <- list(
+  classname = "knitrdrawio_drawio_error",
+  raise = function (error, abort = FALSE, call = rlang::caller_env()) {
+    message <- c(
+      "{.emph drawio} reported an error.",
+      "x" = error,
+    )
+    if (abort) {
+      cli::cli_abort(
+        class = drawio_error$classname,
+        message = message,
+        error = error,
+        call = call
+      )
+    } else {
+      cli::cli_warn(
+        class = drawio_error$classname,
+        message = message,
+        error = error,
+        call = call
+      )
+    }
+  }
+)

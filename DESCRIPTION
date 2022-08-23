@@ -1,7 +1,7 @@
 Package: knitrdrawio
 Type: Package
 Title: Drawio Engine for Knitr
-Version: 0.2.0
+Version: 0.2.1
 Author: Remy Chaput
 Maintainer: remy chaput <rchaput.pro@gmail.com>
 Description: Provides a new engine for knitr that exports draw.io diagrams

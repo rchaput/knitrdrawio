@@ -144,6 +144,20 @@ checksum stay the same.
 Useful for, e.g., writing all figures to a `figure/` directory.
 Non-existing directories are created.
 
+### Other options
+
+* `on.error`: Controls what should **knitrdrawio** do when an error is 
+encountered in *draw.io*:
+  - `stop` (by default) abort, raise an informative error, and stop the
+  document rendering.
+  - `skip` raise an informative warning, and skip the current diagram.
+  - `continue`: raise an informative warning, but let *knitr* try and include
+  the diagram in the document. This method is proposed since draw.io does not
+  explicitly signal an error, thus the error detection could report a false
+  positive. In this case, the `continue` method can be used. However, it is
+  not recommended in general: *knitr* will fail if the diagram can not be
+  found!
+
 [knitr]: https://yihui.org/knitr/
 [knitr-options]: https://yihui.org/knitr/options/
 [draw.io]: https://diagrams.net/
