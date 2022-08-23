@@ -28,7 +28,7 @@
     
     <a class="navbar-brand me-2" href="index.html">knitrdrawio</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -218,6 +218,20 @@ knitr::opts_chunks$set(engine.path = list(
 <li>
 <code>fig.path</code>: A prefix for the path to which the resulting image is written. Useful for, e.g., writing all figures to a <code>figure/</code> directory. Non-existing directories are created.</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="other-options">Other options<a class="anchor" aria-label="anchor" href="#other-options"></a>
+</h3>
+<ul><li>
+<code>on.error</code>: Controls what should <strong>knitrdrawio</strong> do when an error is encountered in <em>draw.io</em>:<ul>
+<li>
+<code>stop</code> (by default) abort, raise an informative error, and stop the document rendering.</li>
+<li>
+<code>skip</code> raise an informative warning, and skip the current diagram.</li>
+<li>
+<code>continue</code>: raise an informative warning, but let <em>knitr</em> try and include the diagram in the document. This method is proposed since draw.io does not explicitly signal an error, thus the error detection could report a false positive. In this case, the <code>continue</code> method can be used. However, it is not recommended in general: <em>knitr</em> will fail if the diagram can not be found!</li>
+</ul>
+</li></ul>
 </div>
 </div>
 </div>
