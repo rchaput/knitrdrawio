@@ -106,6 +106,38 @@ Xvfb &
 R -e 'rmarkdown::render("my_document.Rmd")'
 ```
 
+# Bypassing the headless-detection
+
+By default, **knitrdrawio** tries to detect whether the current system is
+headless, by relying on the `xrandr` tool, or, if it is not available, the
+`$DISPLAY` environment variable.
+
+If, for some reason, this detection does not work, or you want to increase
+performance by avoiding this check every time a chunk is rendered, the
+detection can be bypassed by setting a global option:
+
+    ```r
+    options("knitrdrawio.headless" = FALSE)
+    ```
+
+This option is applied to all subsequent calls to the **knitrdrawio** engine,
+and should thus be placed as early as possible.
+A common place for global options is the `.Renv` file, which is loaded by R
+at the beginning of a session.
+Using a `.Renv` file makes it easy to have different configurations for a local
+development system versus a CI/CD headless workflow.
+
+The following values are recognized:
+
+- `NULL` (default): perform the headless-detection each time.
+- `FALSE`: assume the system is *not* headless, do not perform the detection.
+- `TRUE`: assume the system *is* headless, do not perform the detection, and
+  always apply the "headless workaround" through `xvfb`.
+
+*Warning*: *drawio* will fail if the system is headless but no workaround, such
+as `xvfb`, is set up. You may also use the `FALSE` value to disable
+**knitrdrawio**'s built-in workaround, if you prefer to manually set up another
+one.
 
 [xvfb]: https://packages.ubuntu.com/kinetic/xvfb
 [xvfb-man]: https://linux.die.net/man/1/xvfb

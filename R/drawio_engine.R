@@ -73,7 +73,12 @@ drawio.engine <- function(options) {
     # Parse the options to get the draw.io command line and the output path
     command <- parse.options(options)
 
-    if (is.headless.env()) {
+    # Check if we are in a headless environment. If the global option is TRUE,
+    # assume that we are, without checking. If FALSE, assume we are not.
+    # If `null` (by default) or not a logical value, we check.
+    headless <- getOption("knitrdrawio.headless")
+    if (!is.logical(headless)) headless <- is.headless.env()
+    if (isTRUE(headless)) {
         # We are in a headless (no graphical server) environment.
         # Draw.io requires one to work, so we have to use a virtual
         # server, such as `xvfb`, as described in the official repository
