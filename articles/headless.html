@@ -127,6 +127,26 @@
 <span id="cb1-5"><a href="#cb1-5"></a><span class="ex">R</span> -e <span class="st">'rmarkdown::render("my_document.Rmd")'</span></span></code></pre></div>
 </div>
 </div>
+<div class="section level2">
+<h2 id="bypassing-the-headless-detection">Bypassing the headless-detection<a class="anchor" aria-label="anchor" href="#bypassing-the-headless-detection"></a>
+</h2>
+<p>By default, <strong>knitrdrawio</strong> tries to detect whether the current system is headless, by relying on the <code>xrandr</code> tool, or, if it is not available, the <code>$DISPLAY</code> environment variable.</p>
+<p>If, for some reason, this detection does not work, or you want to increase performance by avoiding this check every time a chunk is rendered, the detection can be bypassed by setting a global option:</p>
+<pre><code>```r
+options("knitrdrawio.headless" = FALSE)
+```</code></pre>
+<p>This option is applied to all subsequent calls to the <strong>knitrdrawio</strong> engine, and should thus be placed as early as possible. A common place for global options is the <code>.Renv</code> file, which is loaded by R at the beginning of a session. Using a <code>.Renv</code> file makes it easy to have different configurations for a local development system versus a CI/CD headless workflow.</p>
+<p>The following values are recognized:</p>
+<ul>
+<li>
+<code>NULL</code> (default): perform the headless-detection each time.</li>
+<li>
+<code>FALSE</code>: assume the system is <em>not</em> headless, do not perform the detection.</li>
+<li>
+<code>TRUE</code>: assume the system <em>is</em> headless, do not perform the detection, and always apply the “headless workaround” through <code>xvfb</code>.</li>
+</ul>
+<p><em>Warning</em>: <em>drawio</em> will fail if the system is headless but no workaround, such as <code>xvfb</code>, is set up. You may also use the <code>FALSE</code> value to disable <strong>knitrdrawio</strong>’s built-in workaround, if you prefer to manually set up another one.</p>
+</div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
 </div>
