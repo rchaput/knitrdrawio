@@ -12,10 +12,10 @@ LABEL org.opencontainers.image.licenses="GPL-3.0" \
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Versions to install
-ENV DRAWIO_VERSION="16.0.0"
+ENV DRAWIO_VERSION="20.2.3"
 
 # Install system dependencies
-# libgbm1, libasound2, xvfb are required for drawio
+# libdrm2, libgbm1, libasound2, xvfb are required for drawio
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
                 ghostscript \
@@ -37,6 +37,7 @@ RUN apt-get update \
                 texlive-plain-generic \
                 texlive-science \
                 texlive-xetex \
+                libdrm2 \
                 libgbm1 \
                 libasound2 \
                 xvfb \
