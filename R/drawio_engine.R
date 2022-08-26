@@ -91,7 +91,8 @@ drawio.engine <- function(options) {
     res <- system2(command$exe, args = command$args, stdout = TRUE, stderr = TRUE)
 
     # Detect and handle errors
-    if (length(grep("Error", res)) > 0) {
+    errors <- detect.errors(res)
+    if (!is.null(errors)) {
         # draw.io reported an error in the stderr/stdout. We decide whether to
         # stop, skip, or continue. Default is to `stop`.
         on.error <- match.arg(options$on.error, c("stop", "skip", "continue"))
@@ -99,17 +100,17 @@ drawio.engine <- function(options) {
             # Raise an error now and stop execution.
             # Knitr would probably raise one anyway, stopping now is more
             # informative for the user.
-            drawio_error$raise(res, abort = TRUE)
+            drawio_error$raise(errors, abort = TRUE)
         } else if (on.error == "skip") {
             # Raise a warning to inform user, and skip the current diagram.
             # Do not try to include it.
-            drawio_error$raise(res, abort = FALSE)
+            drawio_error$raise(errors, abort = FALSE)
             return(invisible(NULL))
         } else if (on.error == "continue") {
             # Raise a warning to inform user, and then continue. Let knitr
             # try to include the produced diagram. If drawio really crashed,
             # the diagram may not exists, and knitr will raise its own error!
-            drawio_error$raise(res, abort = FALSE)
+            drawio_error$raise(errors, abort = FALSE)
         }
     }
 
@@ -118,5 +119,58 @@ drawio.engine <- function(options) {
             options,
             out = list(knitr::include_graphics(command$output))
         )
+    }
+}
+
+#' Detect errors when invoking draw.io
+#'
+#' This function parses the *draw.io* output to detect errors.
+#'
+#' Drawio may encounter errors when invoked, i.e., when exporting a diagram,
+#' for example the diagram source file may be incorrect.
+#' However, they are not visible to the user, because:
+#'
+#' 1. *draw.io* is an invoked process that *knitr* does not know about.
+#' 2. *draw.io* never returns a non-0 code that would indicate an error.
+#'
+#' Instead, errors are reported in the output (*stdout* / *stderr*).
+#' These errors need to be detected automatically by **knitrdrawio**, so
+#' that they can be reported to the user, and eventually stop the *knitr*
+#' process if they are blocking.
+#'
+#' Additionally, this function is responsible for ignoring known errors that
+#' are not linked to *draw.io* itself (for example, errors related to *dbus*
+#' or *dri3*).
+#'
+#' @param output The output result from the invocation of *draw.io*, i.e.,
+#' the standard output and error streams (*stdout* and *stderr*) combined.
+#' It should be a vector of characters, where each element is a line.
+#'
+#' @return Error lines filtered from the `output` param, if they exist, or
+#' `NULL` otherwise.
+#'
+#' @md
+detect.errors <- function (output) {
+    # drawio relies on Electron, and it is a known bug that Electron tries
+    # to connect to dbus, which does not exist in Docker containers.
+    # Several error messages related to dbus can thus be safely ignored.
+    # https://github.com/electron/electron/issues/10345
+    output <- grep("Failed to connect to the bus", output,
+                   value = TRUE, fixed = TRUE, invert = TRUE)
+
+    # Another known bug is related to the GPU and the DRI3 extension.
+    # Normally, using `--disable-gpu` in drawio should avoid using the GPU, thus
+    # not producing any error message ; for an unknwon reason, it still does.
+    output <- grep("dri3 extension not supported", output,
+                   value = TRUE, fixed = TRUE, invert = TRUE)
+
+    if (length(grep("Error", output)) > 0) {
+        # drawio reported an error, we return the whole message (not only lines
+        # that contain "Error"), but without the previously removed lines
+        # (dbus and dri3 can be ignored).
+        output
+    } else {
+        # No error
+        NULL
     }
 }
