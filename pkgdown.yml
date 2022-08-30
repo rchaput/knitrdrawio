@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   headless: headless.html
   knitrdrawio: knitrdrawio.html
-last_built: 2022-08-26T09:18Z
+last_built: 2022-08-30T07:27Z
 urls:
   reference: https://rchaput.github.io/knitrdrawio/reference
   article: https://rchaput.github.io/knitrdrawio/articles
