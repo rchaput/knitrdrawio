@@ -97,6 +97,43 @@ xvfb_binary_not_found <- list(
   }
 )
 
+unrecognized_format <- list(
+  classname = "knitrdrawio_unrecognized_format",
+  raise = function(format, allowed_formats, call = rlang::caller_env()) {
+    cli::cli_warn(
+      class = unrecognized_format$classname,
+      message = c(
+        "{.field format} must be one of {.val {allowed_formats}}.",
+        "x" = "{.field format} was {.val {format}}.",
+        "i" = "Continuing: drawio will produce a PDF."
+      ),
+      format = format,
+      allowed_formats = allowed_formats,
+      call = call
+    )
+  }
+)
+
+incorrect_param_type <- list(
+  classname = "knitrdrawio_incorrect_param_type",
+  raise = function (param_name, expected_type, actual_value,
+                    call = rlang::caller_env()) {
+    actual_type <- class(actual_value)
+    cli::cli_warn(
+      class = incorrect_param_type$classname,
+      message = c(
+        "{.field {param_name}} must be coercible to a {.cls {expected_type}}.",
+        "x" = "{.val {actual_value}} is a {.cls {actual_type}}."
+      ),
+      param_name = param_name,
+      expected_type = expected_type,
+      actual_value = actual_value,
+      actual_type = actual_type,
+      call = call
+    )
+  }
+)
+
 transparent_incorrect_format <- list(
   classname = "knitrdrawio_transparent_incorrect_format",
   raise = function (format, call = rlang::caller_env()) {
@@ -124,6 +161,21 @@ pagerange_incorrect_format <- list(
         "i" = "Continuing: the result will not respect desired range."
       ),
       format = format,
+      call = call
+    )
+  }
+)
+
+pagerange_incorrect_value <- list(
+  classname = "knitdrawio_pagerange_incorrect_value",
+  raise = function (value, call = rlang::caller_env()) {
+    cli::cli_warn(
+      class = pagerange_incorrect_value$classname,
+      message = c(
+        "{.field page.range} must be in the form {.val from..to}.",
+        "x" = "{.field page.range} was {.val {value}}."
+      ),
+      value = value,
       call = call
     )
   }

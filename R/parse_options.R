@@ -53,6 +53,9 @@
 #'
 #' @export
 #'
+
+allowed_formats <- c("pdf", "png", "jpg", "jpeg", "svg", "vsdx", "xml")
+
 parse.options <- function(options) {
     ### Image format
     # By default, if none is specified, the format is set based on the
@@ -69,6 +72,9 @@ parse.options <- function(options) {
         } else {
             "png"
         }
+    }
+    if (!(options$format %in% allowed_formats)) {
+        unrecognized_format$raise(options$format, allowed_formats)
     }
 
     ### Path to the draw.io executable
@@ -90,11 +96,27 @@ parse.options <- function(options) {
     args <- "--export"
 
     ### Crop the output? (by default, yes)
-    if (isTRUE(options$crop) || is.null(options$crop)) {
+    crop <- as.logical(options$crop)
+    if (is.na(crop) && !is.null(options$crop)) {
+        incorrect_param_type$raise(param_name = "crop",
+                                   expected_type = "logical",
+                                   actual_value = options$crop,
+                                   call = rlang::caller_env()
+        )
+    }
+    if (isTRUE(crop) || is.null(options$crop)) {
         args <- c(args, "--crop")
     }
 
     ### Use a transparent background?
+    transparent <- as.logical(options$transparent)
+    if (is.na(transparent) && !is.null(options$transparent)) {
+        incorrect_param_type$raise(param_name = "transparent",
+                                   expected_type = "logical",
+                                   actual_value = options$transparent,
+                                   call = rlang::caller_env()
+        )
+    }
     if (isTRUE(options$transparent)) {
         if (options$format != "png") {
             transparent_incorrect_format$raise(options$format, call = rlang::caller_env())
@@ -107,12 +129,30 @@ parse.options <- function(options) {
 
     ### Border width
     if (!is.null(options$border)) {
-        args <- c(args, "--border", options$border)
+        border <- as.integer(border)
+        if (is.na(border)) {
+            incorrect_param_type$raise(param_name = "border",
+                                       expected_type = "integer",
+                                       actual_value = options$border,
+                                       call = rlang::caller_env()
+            )
+        } else {
+            args <- c(args, "--border", options$border)
+        }
     }
 
     ### Page index (= which "page" in the diagram to export)
     if (!is.null(options$page.index)) {
-        args <- c(args, "--page-index", options$page.index)
+        page_index <- as.integer(options$page.index)
+        if (is.na(page_index)) {
+            incorrect_param_type$raise(param_name = "page.index",
+                                       expected_type = "integer",
+                                       actual_value = options$page.index,
+                                       call = rlang::caller_env()
+            )
+        } else {
+            args <- c(args, "--page-index", options$page.index)
+        }
     }
 
     ### Page range (= multiple "page" indices)
@@ -120,6 +160,11 @@ parse.options <- function(options) {
         if (options$format != "pdf") {
             pagerange_incorrect_format$raise(options$format, call = rlang::caller_env())
         }
+        if (!grep("[[:digit:]]+\\.\\.[[:digit:]]+", options$page.range)) {
+            pagerange_incorrect_value$raise(options$page.range)
+        }
+        # We still include the option, just in case the user knows what
+        # (s)he's doing. Drawio will most likely ignore it.
         args <- c(args, "--page-range", options$page.range)
     }
 
