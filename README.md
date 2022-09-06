@@ -2,6 +2,10 @@
 
 > Author: rchaput \<rchaput.pro\@gmail.com\>
 
+![GitHub R package version](https://img.shields.io/github/r-package/v/rchaput/knitrdrawio?label=release)
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/rchaput/knitrdrawio/pkgdown?label=docs)
+
 ## Description
 
 This package adds a `drawio` engine to [knitr], which can be used to 
