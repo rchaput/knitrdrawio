@@ -101,11 +101,9 @@
 <p><strong>knitrdrawio</strong> provides a complete <a href="https://github.com/rchaput/knitrdrawio/pkgs/container/knitrdrawio" class="external-link">Docker image</a> which already contains all necessary dependencies, such as <em>R</em>, <em>knitr</em>, <em>pandoc</em>, <em>draw.io</em>, etc.</p>
 <p>This image is automatically built against the latest release of knitrdrawio, so you can safely use it in your workflows, or reuse it as a base for your own images.</p>
 <p>This image can be accessed as <code>ghcr.io/rchaput/knitrdrawio:master</code>, e.g.,</p>
-<pre><code>```Dockerfile
-FROM ghcr.io/rchaput/knitrdrawio:master
-RUN apt install &lt;your-custom-dependencies&gt;
-RUN R -e 'rmarkdown::render("your_document.Rmd")'
-```</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode dockerfile"><code class="sourceCode dockerfile"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">FROM</span> ghcr.io/rchaput/knitrdrawio:master</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">RUN</span> apt install &lt;your-custom-dependencies&gt;</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">RUN</span> R -e <span class="st">'rmarkdown::render("your_document.Rmd")'</span></span></code></pre></div>
 <p><em>Note</em>: this image is inspired from rocker/r-rmd, which includes every dependency for rendering documents, including a TeX distribution (for PDF output). It was meant as a ready-to-use tool, for which you do not have to worry: simply bring your own custom dependencies (if any), and let the image do the job for you. However, this results in a very large image size (several GBs).</p>
 </div>
 <div class="section level3">
