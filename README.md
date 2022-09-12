@@ -3,7 +3,6 @@
 > Author: rchaput \<rchaput.pro\@gmail.com\>
 
 ![GitHub R package version](https://img.shields.io/github/r-package/v/rchaput/knitrdrawio?label=release)
-
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/rchaput/knitrdrawio/pkgdown?label=docs)
 
 ## Description
@@ -30,7 +29,7 @@ remotes::install_github("rchaput/knitrdrawio")
 
 Alternatively, you can also use `devtools`:
 
-``` r
+```r
 install.packages("devtools")
 devtools::install_github("rchaput/knitrdrawio")
 ```
@@ -46,20 +45,18 @@ Draw.io requires a slightly different setup on headless environments (without
 a graphical server), such as Docker containers and in particular Continuous 
 Integration workflows.
 
-The following 2 points are important in such cases:
+It is necessary to provide a "fake" graphical server in such environments;
+the easiest method is through the `xvfb-run` binary. On most Linux
+distributions, it can be obtained by installing the `xvfb` package through
+the distribution's package manager (apt, rpm, ...).
 
-* The `xvfb-run` binary must be available on the system. On most Linux
-  distributions, it can be obtained by installing the `xvfb` package through
-  the distribution's package manager (apt, rpm, ...).
-  *Note: `xvfb-run` provides the virtual graphical server that is required
-  for `draw.io` to function. **knitrdrawio** will automatically encapsulate
-  calls to `draw.io` if a headless environment is detected and `xvfb-run` is
-  present. Alternatively, one can set the `$DISPLAY` environment variable to
-  a (virtual) graphical server.*
+Alternatively, you may use the [provided Docker image](https://github.com/rchaput/knitrdrawio/pkgs/container/knitrdrawio),
+which already includes all dependencies and can be directly used in your
+workflows. This image is automatically built against **knitrdrawio**'s latest
+release.
 
-* It is strongly recommended to install `draw.io` [16.0.0][drawio16].
-  *Note: more recent versions of `draw.io` ship Electron 16.x, which seems to
-  have a problem with D-Bus, making `draw.io` crash on headless environments.*
+Please see the [documentation](https://rchaput.github.io/knitrdrawio/articles/headless.html)
+for more details on how to use **knitrdrawio** in headless environments.
 
 ## Usage
 
