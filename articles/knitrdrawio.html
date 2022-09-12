@@ -229,8 +229,8 @@ library(knitrdrawio)
 <p><em>Note</em>: at the time of writing, it is not possible to split the chunk option line. This means that long <code>fig.cap</code> can be hard to read. Fortunately, <a href="https://yihui.org/knitr/" class="external-link">knitr</a> proposes an alternative syntax, based on YAML, to specify chunk options in the chunk itself. See the following chunk example:</p>
 <pre><code>```{drawio test-fig-cap-long, src = "workflow.drawio"}
 #| fig.cap: &gt;
-  A very, very long sentence that shows how we can use YAML syntax to write
-  long figure captions directly in the chunk itself.
+#|  A very, very long sentence that shows how we can use YAML syntax to
+#|  write long figure captions directly in the chunk itself.
 ```</code></pre>
 </div>
 <div class="section level4">

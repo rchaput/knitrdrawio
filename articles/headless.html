@@ -92,39 +92,54 @@
 </h2>
 <p>Two methods are available:</p>
 <ul>
-<li>the first one simply requires additional system dependencies but no setup (<strong>knitrdrawio</strong> will handle it internally) ;</li>
-<li>the second one requires the same dependencies but an additional setup.</li>
+<li>Using the provided Docker image for a simplified experience, at the cost of a large image size.</li>
+<li>Manually installing the tools and dependencies to make <em>draw.io</em> work.</li>
 </ul>
-<p>Both methods require you to install on the system the following dependencies:</p>
+<div class="section level3">
+<h3 id="using-the-provided-docker-image">Using the provided Docker image<a class="anchor" aria-label="anchor" href="#using-the-provided-docker-image"></a>
+</h3>
+<p><strong>knitrdrawio</strong> provides a complete <a href="https://github.com/rchaput/knitrdrawio/pkgs/container/knitrdrawio" class="external-link">Docker image</a> which already contains all necessary dependencies, such as <em>R</em>, <em>knitr</em>, <em>pandoc</em>, <em>draw.io</em>, etc.</p>
+<p>This image is automatically built against the latest release of knitrdrawio, so you can safely use it in your workflows, or reuse it as a base for your own images.</p>
+<p>This image can be accessed as <code>ghcr.io/rchaput/knitrdrawio:master</code>, e.g.,</p>
+<pre><code>```Dockerfile
+FROM ghcr.io/rchaput/knitrdrawio:master
+RUN apt install &lt;your-custom-dependencies&gt;
+RUN R -e 'rmarkdown::render("your_document.Rmd")'
+```</code></pre>
+<p><em>Note</em>: this image is inspired from rocker/r-rmd, which includes every dependency for rendering documents, including a TeX distribution (for PDF output). It was meant as a ready-to-use tool, for which you do not have to worry: simply bring your own custom dependencies (if any), and let the image do the job for you. However, this results in a very large image size (several GBs).</p>
+</div>
+<div class="section level3">
+<h3 id="manual-installation">Manual installation<a class="anchor" aria-label="anchor" href="#manual-installation"></a>
+</h3>
+<p>You may also manually install the dependencies: <strong>knitrdrawio</strong> internally has support for some tools and workarounds to make <em>draw.io</em> work when these tools are available.</p>
+<p>First, you need to install on the system the following dependencies:</p>
 <ul>
 <li>
 <a href="https://packages.ubuntu.com/kinetic/xvfb" class="external-link">xvfb</a>: a virtual display server that behaves as if a “true” graphical display was connected. Read more on the <a href="https://linux.die.net/man/1/xvfb" class="external-link">man page</a>.</li>
 <li>
-<a href="https://packages.ubuntu.com/kinetic/libgbm1" class="external-link">libgbm1</a> and <a href="https://packages.ubuntu.com/kinetic/libasound2" class="external-link">libasound2</a>: libraries that drawio does not include but requires.</li>
+<a href="https://packages.ubuntu.com/kinetic/libdrm2" class="external-link">libdrm2</a>, <a href="https://packages.ubuntu.com/kinetic/libgbm1" class="external-link">libgbm1</a>, <a href="https://packages.ubuntu.com/kinetic/libasound2" class="external-link">libasound2</a>: libraries that drawio does not include but requires.</li>
 </ul>
 <p>These system dependencies can be simply installed through your distribution’s package manager, e.g., <code>apt</code> for Ubuntu and Debian-derivatives systems. Please check with your package manager for the appropriate packages, the name might differ.</p>
-<p>Also, it is <strong>strongly</strong> recommended to use [drawio v16.0.0][drawio16], when using <strong>knitrdrawio</strong> in a CI/CD or headless environment.</p>
-<p>Later versions of drawio (from the 16.0.2) ship with Electron 16.x.x, which seems to have a problem with D-Bus.</p>
-<div class="section level3">
-<h3 id="simple-method">Simple method<a class="anchor" aria-label="anchor" href="#simple-method"></a>
-</h3>
-<p>Step 1. Simply install the required dependencies <code>xvfb</code>, <code>libgbm1</code>, and <code>libasound2</code>.</p>
-<p>Step 2. Profit. <strong>knitrdrawio</strong> will automatically detect you are in a headless environment, and invoke drawio with the correct arguments to use <code>xvfb</code>.</p>
+<p>Then, you may simply render your document: everything will work, thanks to <strong>knitrdrawio</strong>’s internal detection and workaround.</p>
+<p>To summarize, assuming an Ubuntu (or Debian) based environment:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">sudo</span> apt update</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">sudo</span> apt install libdrm2 libgbm1 libasound2 xvfb</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ex">R</span> -e <span class="st">'rmarkdown::render("your_document.Rmd")'</span></span></code></pre></div>
+<div class="section level4">
+<h4 id="performance-optimization">Performance optimization<a class="anchor" aria-label="anchor" href="#performance-optimization"></a>
+</h4>
+<p>However, please note that the previously described steps induce a small overhead: <strong>knitrdrawio</strong> internally relies on <code>xvfb-run</code> to create a “fake” graphical server each time a diagram should be rendered. This process takes an additional time, and, as the number of diagrams in the document increases, the overhead might become noticeable.</p>
+<p>To avoid this and optimize for performance, an additional step can be performed, using the same dependencies. This method creates a virtual server before <strong>knitrdrawio</strong> is launched, using the same virtual server for all diagrams. Thus, the overhead of starting a virtual server is paid only once.</p>
+<p>To do so, <em>before</em> rendering your document, choose a display number, which must be unique on the machine. Usually, <code>99</code> should work. Set the <code>$DISPLAY</code> environment variable to <code>:&lt;your number&gt;</code>, e.g., <code>export DISPLAY=:99</code> (do not forget the <code>:</code> part). Then, start the virtual server with <code>Xvfb &amp;</code>.</p>
+<p>You can now render your document: the virtual server, as a background process, will make <strong>knitrdrawio</strong> (and, ultimately, <em>draw.io</em>) believe there is a graphical server available.</p>
+<p>The complete workflow should look like this, assuming an Ubuntu (or Debian) based distribution:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">sudo</span> apt update</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">sudo</span> apt install libdrm2 libgbm1 libasound2 xvfb</span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="bu">export</span> <span class="va">DISPLAY=</span>:99</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="ex">Xvfb</span> <span class="kw">&amp;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ex">R</span> -e <span class="st">'rmarkdown::render("your_document.Rmd")'</span></span></code></pre></div>
+<p>Note that the first two lines (<code>apt update</code> and <code>apt install</code>) are the same as previously, and need to be executed only once. The following two (<code>export DISPLAY</code> and <code>Xvfb &amp;</code>) need to be executed once in a session, i.e., until your close your terminal. Finally, the last line performs the rendering, and can be executed as much as desired. As long as the background process is available, the rendering will work.</p>
 </div>
-<div class="section level3">
-<h3 id="performance-focused-method">“Performance”-focused method<a class="anchor" aria-label="anchor" href="#performance-focused-method"></a>
-</h3>
-<p>The previous method has the advantage of being simple and not requiring additional setup, except for the dependencies. However, there might be an overhead due to <strong>knitrdrawio</strong> internally invoking <code>xvfb-run</code> each time a diagram must be rendered. As the number of your diagrams grows, the overhead might become noticeable.</p>
-<p>To avoid this, this method creates a virtual server before <strong>knitrdrawio</strong> is launched, and makes the same virtual server be used for all diagrams. Thus, the overhead of starting a virtual server is paid only once.</p>
-<p>Step 1. Install the required dependencies.</p>
-<p>Step 2. <em>Before</em> rendering your document through knitr or rmarkdown, choose a display number, which must be unique on the machine (usually <code>99</code> should work). Set the <code>$DISPLAY</code> environment variable to <code>:&lt;your number&gt;</code>, e.g., <code>export DISPLAY=:99</code> (do not forget the <code>:</code> part). Start the virtual server with <code>Xvfb &amp;</code>.</p>
-<p>Step 3. You can now render your document. The virtual server as a background process will make drawio believe there is a graphical display available.</p>
-<p>The complete workflow should look like this, assuming an Ubuntu distribution:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">sudo</span> apt update</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">sudo</span> apt install xvfb libgbm1 libasound2</span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="bu">export</span> <span class="va">DISPLAY=</span>:99</span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="ex">Xvfb</span> <span class="kw">&amp;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="ex">R</span> -e <span class="st">'rmarkdown::render("my_document.Rmd")'</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
